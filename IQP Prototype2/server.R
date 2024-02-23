@@ -3,42 +3,58 @@ library(ggplot2)
 library(lubridate)
 library(dplyr)
 
-AK116_file_path <- "www/AK116_16023.csv"
-AK233_file_path <- "www/AK116-2024-02-14.csv"
-OH107_file_path <- "www/AK116-2024-02-14.csv"
-OH109_file_path <- "www/AK116-2024-02-14.csv"
-UH520_file_path <- "www/AK116-2024-02-14.csv"
-UH500_file_path <- "www/AK116-2024-02-14.csv"
-SL105_file_path <- "www/AK116-2024-02-14.csv"
-SL104_file_path <- "www/AK116-2024-02-14.csv"
-FLPL_file_path  <- "www/AK116-2024-02-14.csv"
-FLPU_file_path  <- "www/AK116-2024-02-14.csv"
 
-# Reading the CSV files
-AK116_data <- read.csv(AK116_file_path, stringsAsFactors = FALSE)
-AK233_data <- read.csv(AK233_file_path, stringsAsFactors = FALSE)
-OH107_data <- read.csv(OH107_file_path, stringsAsFactors = FALSE)
-OH109_data <- read.csv(OH109_file_path, stringsAsFactors = FALSE)
-UH520_data <- read.csv(UH520_file_path, stringsAsFactors = FALSE)
-UH500_data <- read.csv(UH500_file_path, stringsAsFactors = FALSE)
-SL105_data <- read.csv(SL105_file_path, stringsAsFactors = FALSE)
-SL104_data <- read.csv(SL104_file_path, stringsAsFactors = FALSE)
-FLPL_data  <- read.csv(FLPL_file_path, stringsAsFactors = FALSE)
-FLPU_data  <- read.csv(FLPU_file_path, stringsAsFactors = FALSE)
-
-# Setting column names
-names(AK116_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(AK233_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(OH107_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(OH109_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(UH520_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(UH500_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(SL105_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(SL104_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(FLPL_data)  <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-names(FLPU_data)  <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
 
 server <- function(input, output, session) {
+  
+  
+  observeEvent(input$dateInput_AK116, {
+    # Read the uploaded CSV file
+    data <- read.csv("www/AK116_16023.csv")
+    
+    # Filter the data based on the selected date
+    selected_date <- format(as.Date(input$dateInput_AK116), "%Y-%m-%d")
+    filtered_data <- data %>%
+      filter(substr(timestamp, 1, 10) == selected_date)
+    
+    # Write the filtered data to a new CSV file
+    write.csv(filtered_data, "www/AK116_temp.csv", row.names = FALSE)
+    
+    AK116_file_path <- "www/AK116_temp.csv"
+    AK233_file_path <- "www/AK116_16023.csv"
+    OH107_file_path <- "www/AK116_16023.csv"
+    OH109_file_path <- "www/AK116_16023.csv"
+    UH520_file_path <- "www/AK116_16023.csv"
+    UH500_file_path <- "www/AK116_16023.csv"
+    SL105_file_path <- "www/AK116_16023.csv"
+    SL104_file_path <- "www/AK116_16023.csv"
+    FLPL_file_path  <- "www/AK116_16023.csv"
+    FLPU_file_path  <- "www/AK116_16023.csv"
+    
+    # Reading the CSV files
+    AK116_data <- read.csv(AK116_file_path, stringsAsFactors = FALSE)
+    AK233_data <- read.csv(AK233_file_path, stringsAsFactors = FALSE)
+    OH107_data <- read.csv(OH107_file_path, stringsAsFactors = FALSE)
+    OH109_data <- read.csv(OH109_file_path, stringsAsFactors = FALSE)
+    UH520_data <- read.csv(UH520_file_path, stringsAsFactors = FALSE)
+    UH500_data <- read.csv(UH500_file_path, stringsAsFactors = FALSE)
+    SL105_data <- read.csv(SL105_file_path, stringsAsFactors = FALSE)
+    SL104_data <- read.csv(SL104_file_path, stringsAsFactors = FALSE)
+    FLPL_data  <- read.csv(FLPL_file_path, stringsAsFactors = FALSE)
+    FLPU_data  <- read.csv(FLPU_file_path, stringsAsFactors = FALSE)
+    
+    # Setting column names
+    names(AK116_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(AK233_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(OH107_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(OH109_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(UH520_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(UH500_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(SL105_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(SL104_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(FLPL_data)  <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    names(FLPU_data)  <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    
   # Convert Timestamp from UTC to Eastern Time
   AK116_data <- AK116_data %>%
     mutate(Timestamp = ymd_hms(Timestamp, tz = "UTC"), # Parse as UTC
@@ -206,19 +222,11 @@ server <- function(input, output, session) {
                  ))
         )
       ),
-      fluidRow(column(4, selectInput(
+      selectInput(
         "plot",
         "Plot choose",
         choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-      )),
-      column(4, selectInput(
-        "month",
-        "Month choose",
-        choices = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12")
-      )),
-      column(3, selectInput("date", "Date choose", choices = as.character(1:31))),
-      column(1, actionButton("filter", "Filter"))
-      ), 
+      ),
       
       renderPlot({
         if (input$plot %in% c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")) {
@@ -398,4 +406,7 @@ server <- function(input, output, session) {
                    phUpper_data_reactive(),
                    FLPU_data)
   })
+
+  })
+  
 }
