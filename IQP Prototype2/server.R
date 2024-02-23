@@ -9,16 +9,24 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$dateInput_AK116, {
-    # Read the uploaded CSV file
-    data <- read.csv("www/AK116_16023.csv")
     
-    # Filter the data based on the selected date
-    selected_date <- format(as.Date(input$dateInput_AK116), "%Y-%m-%d")
-    filtered_data <- data %>%
-      filter(substr(timestamp, 1, 10) == selected_date)
+    # Define the path to the temporary file
+    temp_file_path <- "www/AK116_temp.csv"
     
-    # Write the filtered data to a new CSV file
-    write.csv(filtered_data, "www/AK116_temp.csv", row.names = FALSE)
+    # Check if the file exists, and delete it if it does
+    if (file.exists(temp_file_path)) {
+      file.remove(temp_file_path)
+    }
+      # Read the uploaded CSV file
+      data <- read.csv("www/AK116_16023.csv")
+      
+      # Filter the data based on the selected date
+      selected_date <- format(as.Date(input$dateInput_AK116), "%Y-%m-%d")
+      filtered_data <- data %>%
+        filter(substr(timestamp, 1, 10) == selected_date)
+      
+      # Write the filtered data to a new CSV file
+      write.csv(filtered_data, "www/AK116_temp.csv", row.names = FALSE)
     
     AK116_file_path <- "www/AK116_temp.csv"
     AK233_file_path <- "www/AK116_16023.csv"
