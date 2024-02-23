@@ -1,0 +1,12 @@
+name: WPIClassroomDashboard
+title: WPIClassroomDashboard
+username: lianruisun
+account: lianruisun
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10685313
+bundleId: 8282610
+url: https://lianruisun.shinyapps.io/WPIClassroomDashboard/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
