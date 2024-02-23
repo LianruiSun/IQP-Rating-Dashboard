@@ -57,10 +57,11 @@ ui <- dashboardPage(
   ),
   dashboardBody(
     tabItems(
-      tabItem(tabName = "AK116", uiOutput("AK116_score")),
+      tabItem(tabName = "AK116", uiOutput("AK116_score"),
+      dateInput("dateInput_AK116", "Choose a date:", value = Sys.Date())),
       tabItem(tabName = "AK233", uiOutput("AK233_score")),
       tabItem(tabName = "OH107", uiOutput("OH107_score")),
-      tabItem(tabName = "OH109", uiOutput("OH109_score"), ),
+      tabItem(tabName = "OH109", uiOutput("OH109_score")),
       tabItem(tabName = "UH520", uiOutput("UH520_score")),
       tabItem(tabName = "UH500", uiOutput("UH500_score")),
       tabItem(tabName = "SL105", uiOutput("SL105_score")),
@@ -68,6 +69,5 @@ ui <- dashboardPage(
       tabItem(tabName = "FLPL", uiOutput("phLower_score")),
       tabItem(tabName = "FLPU", uiOutput("phUpper_score"))
     ),
-    
   )
 )
