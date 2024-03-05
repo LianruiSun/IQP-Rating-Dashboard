@@ -2,75 +2,17 @@ library(shiny)
 library(ggplot2)
 library(lubridate)
 library(dplyr)
-
+library(readr)
 
 
 server <- function(input, output, session) {
+  base_path <- "www/data/"
   
-  
-  observeEvent(input$dateInput_AK116, {
-    
-    # Define the path to the temporary file
-    temp_file_path <- "www/AK116_temp.csv"
-    
-    # Check if the file exists, and delete it if it does
-    if (file.exists(temp_file_path)) {
-      file.remove(temp_file_path)
-    }
-      # Read the uploaded CSV file
-      data <- read.csv("www/AK116_16023.csv")
-      
-      # Filter the data based on the selected date
-      selected_date <- format(as.Date(input$dateInput_AK116), "%Y-%m-%d")
-      filtered_data <- data %>%
-        filter(substr(timestamp, 1, 10) == selected_date)
-      
-      # Write the filtered data to a new CSV file
-      write.csv(filtered_data, "www/AK116_temp.csv", row.names = FALSE)
-    
-    AK116_file_path <- "www/AK116_temp.csv"
-    AK233_file_path <- "www/AK116_16023.csv"
-    OH107_file_path <- "www/AK116_16023.csv"
-    OH109_file_path <- "www/AK116_16023.csv"
-    UH520_file_path <- "www/AK116_16023.csv"
-    UH500_file_path <- "www/AK116_16023.csv"
-    SL105_file_path <- "www/AK116_16023.csv"
-    SL104_file_path <- "www/AK116_16023.csv"
-    FLPL_file_path  <- "www/AK116_16023.csv"
-    FLPU_file_path  <- "www/AK116_16023.csv"
-    
-    # Reading the CSV files
-    AK116_data <- read.csv(AK116_file_path, stringsAsFactors = FALSE)
-    AK233_data <- read.csv(AK233_file_path, stringsAsFactors = FALSE)
-    OH107_data <- read.csv(OH107_file_path, stringsAsFactors = FALSE)
-    OH109_data <- read.csv(OH109_file_path, stringsAsFactors = FALSE)
-    UH520_data <- read.csv(UH520_file_path, stringsAsFactors = FALSE)
-    UH500_data <- read.csv(UH500_file_path, stringsAsFactors = FALSE)
-    SL105_data <- read.csv(SL105_file_path, stringsAsFactors = FALSE)
-    SL104_data <- read.csv(SL104_file_path, stringsAsFactors = FALSE)
-    FLPL_data  <- read.csv(FLPL_file_path, stringsAsFactors = FALSE)
-    FLPU_data  <- read.csv(FLPU_file_path, stringsAsFactors = FALSE)
-    
-    # Setting column names
-    names(AK116_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(AK233_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(OH107_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(OH109_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(UH520_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(UH500_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(SL105_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(SL104_data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(FLPL_data)  <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    names(FLPU_data)  <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-    
-  # Convert Timestamp from UTC to Eastern Time
-  AK116_data <- AK116_data %>%
-    mutate(Timestamp = ymd_hms(Timestamp, tz = "UTC"), # Parse as UTC
-           Timestamp = with_tz(Timestamp, "America/New_York")) # Convert to Eastern Time  
-  
-  # if (any(is.na(AK116_data$Timestamp))) {
-  #   stop("Timestamp conversion failed. Check the format.")
-  # }
+  # List of file names obtained from the image you've uploaded
+  file_names <- c("AK116_16023.csv", "AK233_16429.csv", "FLPL_16130.csv", 
+                  "FLPU_15681.csv", "OH107_16145.csv", "OH109_15820.csv", 
+                  "SL104_15921.csv", "SL105_16478.csv", "UH500_16586.csv", 
+                  "UH520_16280.csv")
   
   AK116_data_reactive <- reactive({
     source("AK116_API.R", local = TRUE)
@@ -114,7 +56,47 @@ server <- function(input, output, session) {
   })
   
   # Function to generate UI for each room
-  generateRoomUI <- function(roomName, roomPrefix, roomData, environmentData) {
+  generateRoomUI <- function(roomName, roomPrefix, roomData, environmentData, date, plot) {
+    
+    selected_date <- format(as.Date(date), "%Y-%m-%d")
+    file_path <- grep(paste0("^", roomPrefix), file_names, value = TRUE)
+    
+    file_path <- paste0(base_path, file_path)
+      
+      # Read the CSV file
+      data <- read_csv(file_path)
+      
+      # Process and filter data
+      colnames(data)[1] <- "timestamp"
+      data$timestamp <- with_tz(as.POSIXct(data$timestamp, format = "%Y-%m-%d %H:%M:%S"), "America/New_York")
+      filtered_data <- data %>%
+        filter(date(timestamp) == selected_date)
+      
+      # Write the filtered data to a new temporary CSV file
+      temp_file_name <- paste0(sub(".csv", "", roomPrefix), "_temp.csv")
+      file_temp_path <- paste0(base_path, temp_file_name)
+    
+      write_csv(filtered_data, file_temp_path)
+      
+      # Output the name of the temp file created
+      cat("Created temp file:", temp_file_name, "\n")
+    
+    
+    # Reading the CSV files
+    data <- read.csv(file_temp_path, stringsAsFactors = FALSE)
+    
+    # Setting column names
+    names(data) <- c("Timestamp", "Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+    
+    # Convert Timestamp from UTC to Eastern Time
+    data <- data %>%
+      mutate(Timestamp = ymd_hms(Timestamp, tz = "UTC"), # Parse as UTC
+             Timestamp = with_tz(Timestamp, "America/New_York")) # Convert to Eastern Time  
+    
+    # if (any(is.na(data$Timestamp))) {
+    #   stop("Timestamp conversion failed. Check the format.")
+    # }
+
     
     # Stop Shiny when close the window
     session$onSessionEnded(function() {
@@ -230,89 +212,84 @@ server <- function(input, output, session) {
                  ))
         )
       ),
-      selectInput(
-        "plot",
-        "Plot choose",
-        choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
-      ),
       
       renderPlot({
-        if (input$plot %in% c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")) {
+        if (plot %in% c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")) {
           # Calculate the average of the y-values
-          avg_y <- mean(AK116_data[[input$plot]], na.rm = TRUE)
+          avg_y <- mean(data[[plot]], na.rm = TRUE)
           
           # Determine the range values based on the selected input
-          if (input$plot == "Score") {
+          if (plot == "Score") {
             range_start <- 80
             range_end <- 100
             bad_range_start <- 0
             bad_range_end <- 60
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 50)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 100)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 50)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 100)
           } 
-          else if (input$plot == "Temp") {
-            range_start <- 19
-            range_end <- 23
-            bad_range_start <- 18
-            bad_range_end <- 25
+          else if (plot == "Temp") {
+            range_start <- 66.2
+            range_end <- 73.4
+            bad_range_start <- 64.4
+            bad_range_end <- 77
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 15)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 30)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 59)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 85)
           }
-          else if (input$plot == "Humid") {
+          else if (plot == "Humid") {
             range_start <- 40
             range_end <- 50
             bad_range_start <- 35
             bad_range_end <- 60
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 20)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 35)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 20)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 35)
           }
-          else if (input$plot == "co2") {
+          else if (plot == "co2") {
             range_start <- 0
             range_end <- 600
             bad_range_start <- 1000
             bad_range_end <- 1300
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 400)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 1000)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 400)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 1000)
           }
-          else if (input$plot == "voc") {
+          else if (plot == "voc") {
             range_start <- 0
             range_end <- 400
             bad_range_start <- 1000
             bad_range_end <- 2000
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 0)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 1000)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 0)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 1000)
           }
-          else if (input$plot == "pm25") {
+          else if (plot == "pm25") {
             range_start <- 0
             range_end <- 15
             bad_range_start <- 35
             bad_range_end <- 45
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 0)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 35)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 0)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 35)
           }
-          else if (input$plot == "noise") {
+          else if (plot == "noise") {
             range_start <- 0
             range_end <- 45
             bad_range_start <- 85
             bad_range_end <- 200
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 45)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 85)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 45)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 85)
           }
-          else if (input$plot == "light") {
+          else if (plot == "light") {
             range_start <- 300
             range_end <- 500
             bad_range_start <- 100
             bad_range_end <- 600
             # Set y-axis limits around the central part of the data
-            y_limit_lower <- min(min(AK116_data[[input$plot]], na.rm = TRUE), 100)
-            y_limit_upper <- max(max(AK116_data[[input$plot]], na.rm = TRUE), 400)
+            y_limit_lower <- min(min(data[[plot]], na.rm = TRUE), 100)
+            y_limit_upper <- max(max(data[[plot]], na.rm = TRUE), 400)
           }
           else{
             range_start <- 0
@@ -324,14 +301,14 @@ server <- function(input, output, session) {
           }
           
           # Create the plot
-          p <- ggplot(AK116_data, aes_string(x="Timestamp", y=input$plot)) +
+          p <- ggplot(data, aes_string(x="Timestamp", y=plot)) +
             geom_point(size = 2) +
             geom_hline(yintercept = avg_y, color = "blue", linetype = "dashed") +
             geom_hline(yintercept = range_start, color = "green", linetype = "dashed") +
             geom_hline(yintercept = range_end, color = "green", linetype = "dashed") +
             geom_hline(yintercept = bad_range_start, color = "red", linetype = "dashed") +
             geom_hline(yintercept = bad_range_end, color = "red", linetype = "dashed") +
-            labs(title=paste(input$plot, "Over Time"), x="Timestamp", y=input$plot) +
+            labs(title=paste(plot, "Over Time"), x="Timestamp", y=plot) +
             theme_minimal() +
             theme(
               text = element_text(size = 16), # Increase general text size
@@ -345,76 +322,188 @@ server <- function(input, output, session) {
     )
   }
   
-  output$AK116_score <- renderUI({
-    generateRoomUI("Atwater Kent Laboratories - Room 116",
-                   "AK116",
-                   AK116_data_reactive(),
-                   AK116_data)
+  observeEvent(input$dateInput_AK116, {
+    updateUI_AK116()
   })
   
-  output$AK233_score <- renderUI({
-    generateRoomUI("Atwater Kent Laboratories - Room 233",
-                   "AK233",
-                   AK233_data_reactive(),
-                   AK233_data)
+  observeEvent(input$plot_AK116, {
+    updateUI_AK116()
   })
   
-  output$OH107_score <- renderUI({
-    generateRoomUI("Olin Hall - Room 107",
-                   "OH107",
-                   OH107_data_reactive(),
-                   OH107_data)
+  updateUI_AK116 <- function() {
+    output$AK116_ui <- renderUI({
+      generateRoomUI("Atwater Kent Laboratories - Room 116",
+                     "AK116",
+                     AK116_data_reactive(),
+                     AK116_data,
+                     input$dateInput_AK116,
+                     input$plot_AK116)
+    })
+  }
+  
+  observeEvent(input$dateInput_AK233, {
+    updateUI_AK233()
   })
   
-  output$OH109_score <- renderUI({
+  observeEvent(input$plot_AK233, {
+    updateUI_AK233()
+  })
+  
+  updateUI_AK233 <- function() {
+    output$AK233_ui <- renderUI({
+      generateRoomUI("Atwater Kent Laboratories - Room 233",
+                     "AK233",
+                     AK233_data_reactive(),
+                     AK233_data,
+                     input$dateInput_AK233,
+                     input$plot_AK233)
+    })
+  }
+
+  observeEvent(input$dateInput_OH107, {
+    updateUI_OH107()
+  })
+  
+  observeEvent(input$plot_OH107, {
+    updateUI_OH107()
+  })
+  
+updateUI_OH107 <- function() {
+    output$OH107_ui <- renderUI({
+      generateRoomUI("Olin Hall - Room 107",
+                     "OH107",
+                     OH107_data_reactive(),
+                     OH107_data,
+                     input$dateInput_OH107,
+                     input$plot_OH107)
+    })
+} 
+
+
+observeEvent(input$dateInput_OH109, {
+  updateUI_OH109()
+})
+
+observeEvent(input$plot_OH109, {
+  updateUI_OH109()
+})
+
+updateUI_OH109 <- function() {
+  output$OH109_ui <- renderUI({
     generateRoomUI("Olin Hall - Room 109",
                    "OH109",
                    OH109_data_reactive(),
-                   OH109_data)
+                   OH109_data,
+                   input$dateInput_OH109,
+                   input$plot_OH109)
   })
-  
-  output$UH520_score <- renderUI({
+}
+
+observeEvent(input$dateInput_UH520, {
+  updateUI_UH520()
+})
+
+observeEvent(input$plot_UH520, {
+  updateUI_UH520()
+})
+updateUI_UH520 <- function() {
+  output$UH520_ui <- renderUI({
     generateRoomUI("Unity Hall - Room 520",
                    "UH520",
                    UH520_data_reactive(),
-                   UH520_data)
+                   UH520_data,
+                   input$dateInput_UH520,
+                   input$plot_UH520)
   })
-  
-  output$UH500_score <- renderUI({
+}
+
+observeEvent(input$dateInput_UH500, {
+  updateUI_UH500()
+})
+
+observeEvent(input$plot_UH500, {
+  updateUI_UH500()
+})
+updateUI_UH500 <- function() {
+  output$UH500_ui <- renderUI({
     generateRoomUI("Unity Hall - Room 500",
                    "UH500",
                    UH500_data_reactive(),
-                   UH500_data)
+                   UH500_data,
+                   input$dateInput_UH500,
+                   input$plot_UH500)
   })
-  
-  output$SL105_score <- renderUI({
+}
+
+
+observeEvent(input$dateInput_SL105, {
+  updateUI_SL105()
+})
+
+observeEvent(input$plot_SL105, {
+  updateUI_SL105()
+})
+updateUI_SL105 <- function() {
+  output$SL105_ui <- renderUI({
     generateRoomUI("Salisbury Laboratories - Room 105",
                    "SL105",
                    SL105_data_reactive(),
-                   SL105_data)
+                   SL105_data,
+                   input$dateInput_SL105,
+                   input$plot_SL105)
   })
-  
-  output$SL104_score <- renderUI({
+}
+observeEvent(input$dateInput_SL104, {
+  updateUI_SL104()
+})
+
+observeEvent(input$plot_SL104, {
+  updateUI_SL104()
+})
+updateUI_SL104 <- function() {
+  output$SL104_ui <- renderUI({
     generateRoomUI("Salisbury Laboratories - Room 104",
                    "SL104",
                    SL104_data_reactive(),
-                   SL104_data)
+                   SL104_data,
+                   input$dateInput_SL104,
+                   input$plot_SL104)
   })
-  
-  output$phLower_score <- renderUI({
+}
+
+observeEvent(input$dateInput_FLPL, {
+  updateUI_FLPL()
+})
+
+observeEvent(input$plot_FLPL, {
+  updateUI_FLPL()
+})
+updateUI_FLPL <- function() {
+  output$phLower_ui <- renderUI({
     generateRoomUI("Fuller Labs - PH-Lower",
                    "FLPL",
                    phLower_data_reactive(),
-                   FLPL_data)
+                   FLPL_data,
+                   input$dateInput_FLPL,
+                   input$plot_FLPL)
   })
-  
-  output$phUpper_score <- renderUI({
+}
+
+observeEvent(input$dateInput_FLPU, {
+  updateUI_FLPL()
+})
+
+observeEvent(input$plot_FLPU, {
+  updateUI_FLPU()
+})
+updateUI_FLPU <- function() {
+  output$phUpper_ui <- renderUI({
     generateRoomUI("Fuller Labs - PH-Upper",
                    "FLPU",
                    phUpper_data_reactive(),
-                   FLPU_data)
+                   FLPU_data,
+                   input$dateInput_FLPU,
+                   input$plot_FLPU)
   })
-
-  })
-  
+}
 }

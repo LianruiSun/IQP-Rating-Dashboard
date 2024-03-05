@@ -52,22 +52,94 @@ ui <- dashboardPage(
       menuItem("Salisbury Laboratories 105", tabName = "SL105"),
       menuItem("Salisbury Laboratories 104", tabName = "SL104"),
       menuItem("Fuller Labs PH-Lower", tabName = "FLPL"),
-      menuItem("Fuller Labs PH-Upper", tabName = "FLPU")
+      menuItem("Fuller Labs PH-Upper", tabName = "FLPU"),
+      menuItem("Analysis", tabName = "analysis")
     )
   ),
   dashboardBody(
     tabItems(
-      tabItem(tabName = "AK116", uiOutput("AK116_score"),
-      dateInput("dateInput_AK116", "Choose a date:", value = Sys.Date())),
-      tabItem(tabName = "AK233", uiOutput("AK233_score")),
-      tabItem(tabName = "OH107", uiOutput("OH107_score")),
-      tabItem(tabName = "OH109", uiOutput("OH109_score")),
-      tabItem(tabName = "UH520", uiOutput("UH520_score")),
-      tabItem(tabName = "UH500", uiOutput("UH500_score")),
-      tabItem(tabName = "SL105", uiOutput("SL105_score")),
-      tabItem(tabName = "SL104", uiOutput("SL104_score")),
-      tabItem(tabName = "FLPL", uiOutput("phLower_score")),
-      tabItem(tabName = "FLPU", uiOutput("phUpper_score"))
-    ),
+      tabItem(tabName = "AK116",
+              dateInput("dateInput_AK116", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_AK116",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light"),
+                selected = "Score"
+              ),
+              uiOutput("AK116_ui")),
+      tabItem(tabName = "AK233",
+              dateInput("dateInput_AK233", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_AK233",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("AK233_ui")),
+      tabItem(tabName = "OH107",
+              dateInput("dateInput_OH107", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_OH107",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("OH107_ui")),
+      tabItem(tabName = "OH109",
+              dateInput("dateInput_OH109", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_OH109",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("OH109_ui")),
+      tabItem(tabName = "UH520",
+              dateInput("dateInput_UH520", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_UH520",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("UH520_ui")),
+      tabItem(tabName = "UH500",
+              dateInput("dateInput_UH500", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_UH500",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("UH500_ui")),
+      tabItem(tabName = "SL105",
+              dateInput("dateInput_SL105", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_SL105",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("SL105_ui")),
+      tabItem(tabName = "SL104",
+              dateInput("dateInput_SL104", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_SL104",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("SL104_ui")),
+      tabItem(tabName = "FLPL",
+              dateInput("dateInput_FLPL", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_FLPL",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("phLower_ui")),
+      tabItem(tabName = "FLPU",
+              dateInput("dateInput_FLPU", "Choose a date:", value = Sys.Date()),
+              selectInput(
+                "plot_FLPU",
+                "Plot choose",
+                choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
+              ),
+              uiOutput("phUpper_ui"))
+    )
   )
+  
 )
