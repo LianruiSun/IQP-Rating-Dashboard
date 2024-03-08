@@ -5,7 +5,7 @@ account: lianruisun
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10685313
-bundleId: 8290154
+bundleId: 8337298
 url: https://lianruisun.shinyapps.io/WPIClassroomDashboard/
 version: 1
 asMultiple: FALSE

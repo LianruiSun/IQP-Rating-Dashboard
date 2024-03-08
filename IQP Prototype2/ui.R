@@ -138,8 +138,16 @@ ui <- dashboardPage(
                 "Plot choose",
                 choices = c("Score", "Temp", "Humid", "co2", "voc", "pm25", "noise", "light")
               ),
-              uiOutput("phUpper_ui"))
+              uiOutput("phUpper_ui")),
+      tabItem(tabName = "analysis",
+              fluidRow(
+                lapply(c("temp..F.", "humid", "co2", "voc", "pm25", "noise", "light"), function(variable) {
+                  column(12,
+                         img(src = paste0("plots/", variable, ".png"), style = "width:100%;")
+                  )
+                })
+              )
+      )
     )
   )
-  
-)
+  )
